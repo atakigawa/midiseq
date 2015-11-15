@@ -14,7 +14,7 @@
 var tcount = 0; // total ticks playing
 var player;     // global player object
 
-var ntable = new Array('C-', 'C#', 'D-', 'D#', 'E-', 'F-', 'F#', 'G-', 'G#', 'A-', 'A#', 'B-');
+var ntable = ['C-', 'C#', 'D-', 'D#', 'E-', 'F-', 'F#', 'G-', 'G#', 'A-', 'A#', 'B-'];
 
 function notestr(n) {
   return ntable[n%12]+(Math.round(n/12-0.5));
@@ -34,7 +34,8 @@ var scaletab = [
   { name: "Gamelan",           notes: [1,1,0,1,0,0,0,1,1,0,0,0] },
 ];
 
-Sequencer = function(n, c) {
+Sequencer = function(midiMgr, n, c) {
+  this.midiMgr = midiMgr;
   this.channel   = c;
   this.trigger   = 6;
   this.transpose = 0;
@@ -257,7 +258,7 @@ Sequencer = function(n, c) {
     }
     this.Refresh();
     // all note off msg
-    Jazz.MidiOut(0xb0+this.channel-1, 123, 0);
+    this.midiMgr.MidiOut(0xb0+this.channel-1, 123, 0);
   }
 
   this.Reset = function() {
@@ -269,14 +270,14 @@ Sequencer = function(n, c) {
     }
     this.Refresh();
     // all note off msg
-    Jazz.MidiOut(0xb0+this.channel-1, 123, 0);
+    this.midiMgr.MidiOut(0xb0+this.channel-1, 123, 0);
   }
 
   this.SetDefault = function() {
     if (this.channel == 1) {
-      Jazz.MidiOut(0xc0+this.channel-1, 38, 0); // synth bass
+      this.midiMgr.MidiOut(0xc0+this.channel-1, 38, 0); // synth bass
     } else if (this.channel == 2) {
-      Jazz.MidiOut(0xc0+this.channel-1, 81, 0); // saw lead
+      this.midiMgr.MidiOut(0xc0+this.channel-1, 81, 0); // saw lead
     }
   }
 
@@ -294,15 +295,15 @@ Sequencer = function(n, c) {
   }
 
   this.Stop = function() {
-    Jazz.MidiOut(0x80+this.channel-1, this.lastnote, 0);
-    Jazz.MidiOut(0xb0+this.channel-1, 120, 0);
-    Jazz.MidiOut(0xb0+this.channel-1, 123, 0);
+    this.midiMgr.MidiOut(0x80+this.channel-1, this.lastnote, 0);
+    this.midiMgr.MidiOut(0xb0+this.channel-1, 120, 0);
+    this.midiMgr.MidiOut(0xb0+this.channel-1, 123, 0);
   }
 
   // called each midi event 1/24 trig
   this.Playnote = function() {
     if (--this.lastnoteoff == 0) {
-      Jazz.MidiOut(0x80+this.channel-1, this.lastnote, 0);
+      this.midiMgr.MidiOut(0x80+this.channel-1, this.lastnote, 0);
     }
     if (tcount % this.trigger > 0) {
       return;
@@ -310,8 +311,8 @@ Sequencer = function(n, c) {
 
     var trg = this.retrig[this.note] || this.reppos == 0;
     if (!this.muted && trg) {
-      Jazz.MidiOut(0x80+this.channel-1, this.lastnote, 0);
-      Jazz.MidiOut(0x90+this.channel-1, this.notes[this.note]+this.transpose, 127);
+      this.midiMgr.MidiOut(0x80+this.channel-1, this.lastnote, 0);
+      this.midiMgr.MidiOut(0x90+this.channel-1, this.notes[this.note]+this.transpose, 127);
       $('#'+this.seqid).find('tbody tr:nth-child('+(this.note+2)+') td:nth-child(1)').effect("highlight", {'color': '#f00'}, 50);
     } else if (this.muted && trg) {
       $('#'+this.seqid).find('tbody tr:nth-child('+(this.note+2)+') td:nth-child(1)').effect("highlight", {'color': '#ccc'}, 50);
@@ -384,15 +385,16 @@ function midi_handler(t,a,b,c) {
     case 0xfa: // start msg
       player.Init();
       midi_in_playing = 1;
-      console.log("Remote start.");
+      console.log('Remote start.');
       break;
     case 0xfc: // stop msg
       player.Stop();
       midi_in_playing = 0;
-      console.log("Remote stop.");
+      console.log('Remote stop.');
       break;
     default:
-      //console.log(t,a,b,c);
+      console.log('Unknown remote message');
+      console.log(t,a,b,c);
       break;
   }
 }
@@ -402,9 +404,12 @@ function midi_handler(t,a,b,c) {
 var seq01;
 var seq02;
 
-Player = function() {
-  if (!(Jazz && Jazz.isJazz)) { console.log("Jazz not ready."); return; }
+function initPlayer(midiMgr) {
+  player = new Player(midiMgr);
+}
 
+Player = function(midiMgr) {
+  this.midiMgr = midiMgr;
   this.playing  = 0;
   this.interval = 20;
   this.timeout  = 0;
@@ -412,8 +417,8 @@ Player = function() {
   this.midi_out;
   this.sync     = 1; // 1 = send, 2 = receive, 3 = nothing
 
-  seq01 = new Sequencer("seq01", 1);
-  seq02 = new Sequencer("seq02", 2);
+  seq01 = new Sequencer(this.midiMgr, "seq01", 1);
+  seq02 = new Sequencer(this.midiMgr, "seq02", 2);
 
   this.Export = function() {
     var out = {
@@ -461,12 +466,12 @@ Player = function() {
       ($('#tempo')[0])[i-40] = new Option(i,i,i==120,i==120);
     }
 
-    var list=Jazz.MidiOutList();
+    var list=this.midiMgr.MidiOutList();
     for (var i in list) {
       ($("#select_out")[0])[i] = new Option(list[i],list[i],i==0,i==0);
     }
 
-    var list=Jazz.MidiInList();
+    var list=this.midiMgr.MidiInList();
     for (var i in list) {
       ($("#select_in")[0])[i] = new Option(list[i],list[i],i==0,i==0);
     }
@@ -493,7 +498,7 @@ Player = function() {
     if (this.playing == 1) {
       this.Stop();
       if (this.sync == 1) {
-        Jazz.MidiOut(0xfc);
+        this.midiMgr.MidiOut(0xfc);
       }
       this.playing = 0;
       document.getElementById('play').innerHTML='Play';
@@ -501,7 +506,7 @@ Player = function() {
       console.log("Stopped.");
     } else {
       if (this.sync == 1) {
-        Jazz.MidiOut(0xfa);
+        this.midiMgr.MidiOut(0xfa);
       }
       this.playing = 1;
       document.getElementById('play').innerHTML='Stop';
@@ -513,7 +518,7 @@ Player = function() {
 
   this.tick = function() {
     if ( this.sync == 1 ) {
-      Jazz.MidiOut(0xf8);
+      this.midiMgr.MidiOut(0xf8);
     }
     seq01.Playnote();
     seq02.Playnote();
@@ -521,15 +526,14 @@ Player = function() {
   }
 
   this.initmidi = function() {
-    if (!(Jazz && Jazz.isJazz)) { return; }
     var select_out = document.getElementById("select_out");
     var select_in = document.getElementById("select_in");
     this.midi_out = select_out.options[select_out.selectedIndex].value;
     this.midi_in = select_in.options[select_in.selectedIndex] ? select_in.options[select_in.selectedIndex].value : 0;
     console.log('Output Device: '+this.midi_out+' Input Device: '+this.midi_in);
-    Jazz.MidiOutOpen(this.midi_out);
+    this.midiMgr.MidiOutOpen(this.midi_out);
     if (this.midi_in != 0) {
-      Jazz.MidiInOpen(this.midi_in, midi_handler);
+      this.midiMgr.MidiInOpen(this.midi_in, midi_handler);
     }
   }
 
@@ -558,7 +562,7 @@ Player = function() {
     if (this.sync == 2) {
       $("#play").attr("disabled", "disabled");
       $("#tempo").attr("disabled", "disabled");
-      midi_handler_id = Jazz.MidiInOpen(this.midi_in, midi_handler);
+      midi_handler_id = this.midiMgr.MidiInOpen(this.midi_in, midi_handler);
     }
   }
 };

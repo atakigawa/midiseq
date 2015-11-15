@@ -10,7 +10,9 @@
   <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
   <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
   <script src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+  <script src="socket.io/socket.io.js"></script>
   <script src="js/player.js"></script>
+  <script src="js/midi-lib.js"></script>
 
   <style type="text/css">
     .hidden {
@@ -45,9 +47,16 @@
 
   <script>
     $(function() {
-      player = new Player();
+      var url = location.hostname;
+      if (location.port) { url += ':' + location.port; }
+      url += '/ws/midi';
+      var midiMgr = new MidiManager('socket.io', {
+        url: url
+      });
+      initPlayer(midiMgr);
       player.Draw();
     });
+
   </script>
 
 </body>
