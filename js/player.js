@@ -14,6 +14,20 @@
 var tcount = 0; // total ticks playing
 var player;     // global player object
 
+var C = {
+  SYNC: {
+    SEND: 1,
+    RECV: 2,
+    NONE: 3
+  },
+  LOOP: {
+    FWD: 1,
+    REV: 2,
+    PINGPONG: 3,
+    INNER_PINGPONG: 4
+  }
+};
+
 var ntable = ['C-', 'C#', 'D-', 'D#', 'E-', 'F-', 'F#', 'G-', 'G#', 'A-', 'A#', 'B-'];
 
 function notestr(n) {
@@ -41,12 +55,12 @@ Sequencer = function(midiMgr, n, c) {
   this.transpose = 0;
   this.muted     = 0;
   this.name      = n;
-  this.loop      = 1; // 1=fwd, 2=rev, 3=pingpong, 4=inner pingpong
+  this.loop      = C.LOOP.FWD;
 
-  this.notes     = new Array();
-  this.repeat    = new Array();
-  this.noteoff   = new Array();
-  this.retrig    = new Array();
+  this.notes     = [];
+  this.repeat    = [];
+  this.noteoff   = [];
+  this.retrig    = [];
 
   this.note        = 0;
   this.lastnote    = 0;
@@ -289,7 +303,7 @@ Sequencer = function(midiMgr, n, c) {
     this.looppos     = 0;
 
     // start backwards
-    if (this.loop == 2) {
+    if (this.loop == C.LOOP.REV) {
       this.note = this.notes.length-1;
     }
   }
@@ -324,39 +338,39 @@ Sequencer = function(midiMgr, n, c) {
     this.reppos++;
     if (this.reppos >= this.repeat[this.note]) {
       this.reppos = 0;
-      if (this.loop == 1) {
+      if (this.loop == C.LOOP.FWD) {
         // forward
         this.note++;
         if (this.note >= this.notes.length) {
           this.note = 0;
         }
-      } else if (this.loop == 2) {
+      } else if (this.loop == C.LOOP.REV) {
         // backward
         this.note--;
         if (this.note < 0) {
           this.note = this.notes.length-1;
         }
-      } else if (this.loop == 3 && this.looppos == 0) {
+      } else if (this.loop == C.LOOP.PINGPONG && this.looppos == 0) {
         // pingpong forward
         this.note++;
         if (this.note >= this.notes.length) {
           this.note = this.notes.length-1;
           this.looppos = 1;
         }
-      } else if (this.loop == 3 && this.looppos == 1) {
+      } else if (this.loop == C.LOOP.PINGPONG && this.looppos == 1) {
         // pingpong backward
         this.note--;
         if (this.note < 0) {
           this.note = 0; this.looppos = 0
         }
-      } else if (this.loop == 4 && this.looppos == 0) {
+      } else if (this.loop == C.LOOP.INNER_PINGPONG && this.looppos == 0) {
         // innerpong forward
         this.note++;
         if (this.note >= this.notes.length) {
           this.note = this.notes.length-2;
           this.looppos = 1;
         }
-      } else if (this.loop == 4 && this.looppos == 1) {
+      } else if (this.loop == C.LOOP.INNER_PINGPONG && this.looppos == 1) {
         // innerpong backward
         this.note--;
         if (this.note < 0) {
@@ -415,7 +429,7 @@ Player = function(midiMgr) {
   this.timeout  = 0;
   this.midi_in;
   this.midi_out;
-  this.sync     = 1; // 1 = send, 2 = receive, 3 = nothing
+  this.sync = C.SYNC.SEND;
 
   seq01 = new Sequencer(this.midiMgr, "seq01", 1);
   seq02 = new Sequencer(this.midiMgr, "seq02", 2);
@@ -497,7 +511,7 @@ Player = function(midiMgr) {
   this.Play = function() {
     if (this.playing == 1) {
       this.Stop();
-      if (this.sync == 1) {
+      if (this.sync == C.SYNC.SEND) {
         this.midiMgr.MidiOut(0xfc);
       }
       this.playing = 0;
@@ -505,7 +519,7 @@ Player = function(midiMgr) {
       clearInterval(this.timeout);
       console.log("Stopped.");
     } else {
-      if (this.sync == 1) {
+      if (this.sync == C.SYNC.SEND) {
         this.midiMgr.MidiOut(0xfa);
       }
       this.playing = 1;
@@ -517,7 +531,7 @@ Player = function(midiMgr) {
   }
 
   this.tick = function() {
-    if ( this.sync == 1 ) {
+    if (this.sync == C.SYNC.SEND) {
       this.midiMgr.MidiOut(0xf8);
     }
     seq01.Playnote();
@@ -559,7 +573,7 @@ Player = function(midiMgr) {
     $("#tempo").removeAttr("disabled");
 
     // setup midi input
-    if (this.sync == 2) {
+    if (this.sync == C.SYNC.RECV) {
       $("#play").attr("disabled", "disabled");
       $("#tempo").attr("disabled", "disabled");
       midi_handler_id = this.midiMgr.MidiInOpen(this.midi_in, midi_handler);

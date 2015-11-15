@@ -19,7 +19,7 @@ MidiManager.prototype.MidiOutOpen = function(channelNum) {
 };
 
 MidiManager.prototype.MidiInOpen = function(channelNum, handler) {
-  this.io.MidiInOpen(channelNum, handler);
+  return this.io.MidiInOpen(channelNum, handler);
 };
 
 MidiManager.prototype.MidiOutList = function() {
@@ -56,4 +56,5 @@ SocketIOClient.prototype.MidiInOpen = function(channelNum, handler) {
   socket.on('midi_s2c', function(m) {
     handler(m);
   });
+  return -1;
 };
