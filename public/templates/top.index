@@ -1,0 +1,103 @@
+<div class="container">
+  <div class="navbar navbar-default navbar-inverse" role="navigation">
+    <div class="navbar-header">
+      <a class="navbar-brand hidden-sm" href="#" style="color:#aaa">8-64 Variable Step Midi Sequencer</a>
+    </div>
+  </div>
+  <div id="player">
+    <div class="setuppanel">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <button class="btn btn-default btn-xs" ng-click="vm.toggleSetupPanelVisible();" type="button"><span class="glyphicon glyphicon-sort"></span></button><b class="panel-title"><span style="color:#ff4422">MIDI</span><span>Setup</span></b>
+        </div>
+        <div ng-show="vm.isSetupPanelVisible">
+          <div class="panel-body">
+            <table>
+              <tr>
+                <td>
+                  MIDI Output Device:
+                </td>
+                <td>
+                  <select id="select_out" ng-change="vm.player.initmidi();" ng-model="vm.player.midiOut" ng-options="v.name for v in vm.player.midiOutList"></select>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  MIDI Input Device:
+                </td>
+                <td>
+                  <select id="select_in" ng-change="vm.player.initmidi();" ng-model="vm.player.midiIn" ng-options="v.name for v in vm.player.midiInList"></select>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Clock Sync
+                </td>
+                <td>
+                  <select id="clocksync" ng-change="vm.player.changesync();" ng-model="vm.player.sync" ng-options="v.name for v in vm.mst.syncList"></select>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <span>BPM:</span><select id="tempo" ng-change="vm.player.changetempo();" ng-model="vm.player.tempo" ng-options="v.name for v in vm.mst.tempoList"></select><button id="play" ng-click="vm.player.TogglePlay()">{{vm.player.isPlaying ? 'Stop' : 'Play'}}</button><button id="save" ng-click="vm.player.Save()">Save</button>
+      </div>
+    </div>
+    <div id="{{seq.name}}" ng-repeat="seq in vm.player.sequencers">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <b class="panel-title"><span style="color:#ff4422">SEQ</span></b><span>Channel:</span><select ng-model="seq.channel" ng-options="v.name for v in vm.mst.channelList"></select><span>Trigger:</span><select ng-model="seq.trigger" ng-options="v.name for v in vm.mst.triggerList"></select><span>Transpose:</span><select ng-model="seq.transpose" ng-options="v.name for v in vm.mst.transposeList"></select><span>Mute:</span><input ng-change="seq.changeMute()" ng-model="seq.muted" type="checkbox" /><span>Loop:</span><select ng-model="seq.loop" ng-options="v.name for v in vm.mst.loopList"></select>
+          <div class="pull-right">
+            <select ng-model="seq.scale" ng-options="v.name for v in vm.mst.scaleList"></select><select ng-model="seq.range" ng-options="v.name for v in vm.mst.rangeList"></select><span>Oct</span><button ng-click="seq.Randomize()">Randomize</button><button ng-click="seq.Reset()">Init</button>
+          </div>
+          <div class="seq-table">
+            <table class="table table-condensed table-striped">
+              <tr>
+                <th>
+                  Pos
+                </th>
+                <th>
+                  Note
+                </th>
+                <th>
+                  Repeat
+                </th>
+                <th>
+                  Retrig
+                </th>
+                <th>
+                  Len
+                </th>
+              </tr>
+              <tr ng-repeat="elem in seq.seqElems">
+                <td id="{{elem.id}}">
+                  {{elem.pos}}.
+                </td>
+                <td>
+                  <select ng-model="elem.note" ng-options="v.name for v in vm.mst.noteList"></select>
+                  <div id="notslide{{this.name}}i"></div>
+                </td>
+                <td>
+                  <select ng-model="elem.repeat" ng-options="v.name for v in vm.mst.repeatList"></select>
+                </td>
+                <td>
+                  <input ng-model="elem.reTrig" type="checkbox" />
+                </td>
+                <td>
+                  <select ng-model="elem.noteOff" ng-options="v.name for v in vm.mst.noteOffList"></select>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <p>
+            Total Steps: <span>{{seq.totalSteps}}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

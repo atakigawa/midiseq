@@ -1,0 +1,17 @@
+{
+  "name": "lone-chord-generator",
+  "version": "1.0.0",
+  "homepage": "https://github.com/atakigawa/midiseq",
+  "authors": [
+    "Akinori Takigawa <akinori.takigawa@gmail.com>"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "underscore": "~1.8.3",
+    "angular": "~1.4.7",
+    "angular-route": "~1.4.7",
+    "angular-resource": "~1.4.7",
+    "angular-mocks": "~1.4.7",
+    "jquery": "~2.1.4"
+  }
+}

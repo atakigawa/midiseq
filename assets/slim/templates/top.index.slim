@@ -1,0 +1,103 @@
+div.container
+  div.navbar.navbar-default.navbar-inverse role="navigation"
+    div.navbar-header
+      a.navbar-brand.hidden-sm style="color:#aaa" href="#"
+        | 8-64 Variable Step Midi Sequencer
+
+  div#player
+    div.setuppanel
+      div.panel.panel-default
+        div.panel-heading
+          button.btn.btn-default.btn-xs [type="button"
+              ng-click="vm.toggleSetupPanelVisible();"]
+            span.glyphicon.glyphicon-sort
+          b.panel-title
+            span style="color:#ff4422" MIDI
+            span Setup
+        div ng-show="vm.isSetupPanelVisible"
+          div.panel-body
+            table
+              tr
+                td MIDI Output Device:
+                td
+                  select#select_out [ng-model="vm.player.midiOut"
+                    ng-options="v.name for v in vm.player.midiOutList"
+                    ng-change="vm.player.initmidi();"]
+              tr
+                td MIDI Input Device:
+                td
+                  select#select_in [ng-model="vm.player.midiIn"
+                    ng-options="v.name for v in vm.player.midiInList"
+                    ng-change="vm.player.initmidi();"]
+              tr
+                td Clock Sync
+                td
+                  select#clocksync [ng-model="vm.player.sync"
+                    ng-options="v.name for v in vm.mst.syncList"
+                    ng-change="vm.player.changesync();"]
+
+    div.panel.panel-default
+      div.panel-body
+        span BPM:
+        select#tempo [ng-change="vm.player.changetempo();"
+          ng-model="vm.player.tempo"
+          ng-options="v.name for v in vm.mst.tempoList"]
+        button#play ng-click="vm.player.TogglePlay()"
+          |
+            {{vm.player.isPlaying ? 'Stop' : 'Play'}}
+        button#save ng-click="vm.player.Save()" Save
+
+    div ng-repeat="seq in vm.player.sequencers" id="{{seq.name}}"
+      div.panel.panel-default
+        div.panel-heading
+          b.panel-title
+            span style="color:#ff4422" SEQ
+          span Channel:
+          select [ng-options="v.name for v in vm.mst.channelList"
+            ng-model="seq.channel"]
+          span Trigger:
+          select [ng-options="v.name for v in vm.mst.triggerList"
+            ng-model="seq.trigger"]
+          span Transpose:
+          select [ng-options="v.name for v in vm.mst.transposeList"
+            ng-model="seq.transpose"]
+          span Mute:
+          input [type="checkbox"
+            ng-change="seq.changeMute()"
+            ng-model="seq.muted"]
+          span Loop:
+          select [ng-options="v.name for v in vm.mst.loopList"
+            ng-model="seq.loop"]
+          div.pull-right
+            select [ng-options="v.name for v in vm.mst.scaleList"
+              ng-model="seq.scale"]
+            select [ng-options="v.name for v in vm.mst.rangeList"
+              ng-model="seq.range"]
+            span Oct
+            button ng-click="seq.Randomize()" Randomize
+            button ng-click="seq.Reset()" Init
+          div.seq-table
+            table.table.table-condensed.table-striped
+              tr
+                th Pos
+                th Note
+                th Repeat
+                th Retrig
+                th Len
+              tr ng-repeat="elem in seq.seqElems"
+                td id ="{{elem.id}}"
+                  | {{elem.pos}}.
+                td
+                  select [ng-options="v.name for v in vm.mst.noteList"
+                    ng-model="elem.note"]
+                  div id="notslide{{this.name}}i"
+                td
+                  select [ng-options="v.name for v in vm.mst.repeatList"
+                    ng-model="elem.repeat"]
+                td
+                  input type="checkbox" ng-model="elem.reTrig"
+                td
+                  select [ng-options="v.name for v in vm.mst.noteOffList"
+                    ng-model="elem.noteOff"]
+          p
+            | Total Steps: <span>{{seq.totalSteps}}</span>

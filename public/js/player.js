@@ -434,11 +434,11 @@ Player = function(midiMgr) {
   seq01 = new Sequencer(this.midiMgr, "seq01", 1);
   seq02 = new Sequencer(this.midiMgr, "seq02", 2);
 
-  this.Export = function() {
+  this.Save = function() {
     var out = {
-      seq: new Array(seq01.Export(), seq02.Export()),
+      seq: [seq01.Export(), seq02.Export()]
     };
-    console.log(JSON.stringify(out));
+    localStorage.setItem('midiseq-xxxx', JSON.stringify(out));
   }
 
   this.Draw = function() {
@@ -468,7 +468,7 @@ Player = function(midiMgr) {
         <div class="panel-body"> \
           BPM: <select id=tempo onchange="player.changetempo();"></select> \
           <button id=play onclick="player.Play()">Play</button> \
-          <button id=export onclick="player.Export()">Export</button> \
+          <button id=save onclick="player.Save()">Save</button> \
         </div> \
       </div> \
       <div id="seq01"></div> \
