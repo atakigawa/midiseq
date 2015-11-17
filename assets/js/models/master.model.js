@@ -69,7 +69,7 @@ function MasterData(_, jq) {
       {value: obj.C.LOOP.FWD, name: 'Forward'},
       {value: obj.C.LOOP.REV, name: 'Backward'},
       {value: obj.C.LOOP.PINGPONG, name: 'Pingpong'},
-      {value: obj.C.LOOP.INNER_PINGPONG, name: 'Inner'}
+      {value: obj.C.LOOP.INNER_PINGPONG, name: 'Inner Pingpong'}
     ];
   }
 

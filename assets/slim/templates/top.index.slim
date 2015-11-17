@@ -85,12 +85,12 @@ div.container
                 th Retrig
                 th Len
               tr ng-repeat="elem in seq.seqElems"
-                td id ="{{elem.id}}"
-                  | {{elem.pos}}.
+                td.hl-container
+                  | <div id="{{elem.id}}-hl" class="hl-panel"></div>
+                    <span>{{elem.pos}}.</span>
                 td
                   select [ng-options="v.name for v in vm.mst.noteList"
                     ng-model="elem.note"]
-                  div id="notslide{{this.name}}i"
                 td
                   select [ng-options="v.name for v in vm.mst.repeatList"
                     ng-model="elem.repeat"]

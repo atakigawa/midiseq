@@ -176,6 +176,14 @@ function PlayerLibModel(_, jq) {
       this.sendChannelMsg(0xb0, 0x7b, 0);
     }
 
+    function doHighlightEffect(seqElem, color, duration) {
+      var hlPanel = $('#'+seqElem+'-hl');
+      hlPanel
+        .css('background-color', color)
+        .show()
+        .fadeOut(duration);
+    }
+
     // called each midi event 1/24 trig
     this.Playnote = function() {
       if (--this.lastNoteOff == 0) {
@@ -192,11 +200,9 @@ function PlayerLibModel(_, jq) {
         if (!this.muted) {
           this.sendChannelMsg(0x80, this.lastNote, 0);
           this.sendChannelMsg(0x90, note, 127);
-          $('#' + cElem.id)
-            .effect("highlight", {'color': '#ff6600'}, 50);
+          doHighlightEffect(cElem.id, '#ff6600', 50);
         } else {
-          $('#' + cElem.id)
-            .effect("highlight", {'color': '#cccccc'}, 50);
+          doHighlightEffect(cElem.id, '#cccccc', 50);
         }
       }
 
@@ -258,28 +264,29 @@ function PlayerLibModel(_, jq) {
 
 
   // Global midi input handler
-  var midi_handler_id;
-  var midi_in_playing = 0;
-  function midi_handler(t,a,b,c) {
+  var midiHandlerId;
+  var midiInPlaying = false;
+  function midiHandler(player, cmdArr) {
+    var a = cmdArr[0];
     switch(a) {
       case 0xf8: // clock msg
-        if (midi_in_playing) {
+        if (midiInPlaying) {
           player.tick();
         }
         break;
       case 0xfa: // start msg
         player.Init();
-        midi_in_playing = 1;
+        midiInPlaying = true;
         console.log('Remote start.');
         break;
       case 0xfc: // stop msg
         player.Stop();
-        midi_in_playing = 0;
+        midiInPlaying = false;
         console.log('Remote stop.');
         break;
       default:
         console.log('Unknown remote message');
-        console.log(t,a,b,c);
+        console.log(a);
         break;
     }
   }
@@ -389,7 +396,10 @@ function PlayerLibModel(_, jq) {
       console.log('Output Device: '+mOutVal+' Input Device: '+mInVal);
       this.midiMgr.MidiOutOpen(mOutVal);
       if (this.mInVal != 0) {
-        this.midiMgr.MidiInOpen(this.mInVal, midi_handler);
+        this.midiMgr.MidiInOpen(this.mInVal, function() {
+          var args = [].slice.call(arguments);
+          midiHandler(_this, args);
+        });
       }
     }
 
@@ -405,8 +415,11 @@ function PlayerLibModel(_, jq) {
       if (this.sync.value == mst.C.SYNC.RECV) {
         jq("#play").attr("disabled", "disabled");
         jq("#tempo").attr("disabled", "disabled");
-        midi_handler_id =
-          this.midiMgr.MidiInOpen(this.midiIn.value, midi_handler);
+        midiHandlerId =
+          this.midiMgr.MidiInOpen(this.midiIn.value, function() {
+            var args = [].slice.call(arguments);
+            midiHandler(_this, args);
+          });
       }
     }
   };

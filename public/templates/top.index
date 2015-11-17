@@ -74,12 +74,12 @@
                 </th>
               </tr>
               <tr ng-repeat="elem in seq.seqElems">
-                <td id="{{elem.id}}">
-                  {{elem.pos}}.
+                <td class="hl-container">
+                  <div id="{{elem.id}}-hl" class="hl-panel"></div>
+                  <span>{{elem.pos}}.</span>
                 </td>
                 <td>
                   <select ng-model="elem.note" ng-options="v.name for v in vm.mst.noteList"></select>
-                  <div id="notslide{{this.name}}i"></div>
                 </td>
                 <td>
                   <select ng-model="elem.repeat" ng-options="v.name for v in vm.mst.repeatList"></select>
