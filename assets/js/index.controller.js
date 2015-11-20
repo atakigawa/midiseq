@@ -5,13 +5,13 @@ angular
 IndexController.$inject = [
   '$location', '$window', '$routeParams', '$controller',
   '$log', '_', 'jq',
-  'MidiLibModel', 'PlayerLibModel', 'MasterData'
+  'MidiService', 'SeqGenClientService', 'PlayerLibModel', 'MasterData'
 ];
 
 function IndexController(
   $location, $window, $routeParams, $controller,
   $log, _, jq,
-  MidiLibModel, PlayerLibModel, MasterData
+  MidiService, SeqGenClientService, PlayerLibModel, MasterData
 ) {
   var vm = this;
 
@@ -24,10 +24,11 @@ function IndexController(
   init();
 
   function init() {
-    var url = location.host + '/ws/midi';
-    var midiMgr = new MidiLibModel().getMidiManager({
-      url: url
-    });
+    var midiMgr = MidiService.getMidiManager();
+    console.log(midiMgr)
+    var seqGenClient = SeqGenClientService.getClient({
+      url: location.host + '/ws/midi'
+    })
     vm.player = new PlayerLibModel().getPlayer({
       mst: vm.mst,
       midiManager: midiMgr
