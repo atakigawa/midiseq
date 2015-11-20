@@ -10,15 +10,15 @@ function SeqGenClientService(params) {
   };
 
   function getClient(params) {
-    return new SocketIOClient(params);
+    return new SeqGenSocketIOClient(params);
   }
 }
 
 /* SocketIOClient */
-function SocketIOClient(params) {
+function SeqGenSocketIOClient(params) {
   var socket = io(params.url);
   socket.on('connect', function(){
-    socket.emit('ping', {msg: 'ping msg from browser'});
+    socket.emit('ping', {msg: 'ping seq-gen socket.io'});
   });
   socket.on('pong', function(m) {
     console.log('pong has returned');
@@ -28,6 +28,6 @@ function SocketIOClient(params) {
   this.socket = socket;
 }
 
-SocketIOClient.prototype.genSeq = function(params) {
+SeqGenSocketIOClient.prototype.genSeq = function(params) {
   this.socket.emit('genSeq', params)
 };

@@ -110,7 +110,7 @@ function PlayerLibModel(_, jq) {
 
     this.Randomize = function() {
       var scaleNoteArr = mst.scaletab[this.scale.value].notes;
-      var range = this.range.vaue;
+      var range = this.range.value;
 
       _.each(this.seqElems, function(e) {
         var note;
@@ -146,14 +146,6 @@ function PlayerLibModel(_, jq) {
       // all note off msg
       this.sendChannelMsg(0xb0, 0x7b, 0);
     }
-
-    //this.SetDefault = function() {
-    //  if (this.channel == 1) {
-    //    this.midiMgr.MidiOut(0xc0+this.channel-1, 38, 0); // synth bass
-    //  } else if (this.channel == 2) {
-    //    this.midiMgr.MidiOut(0xc0+this.channel-1, 81, 0); // saw lead
-    //  }
-    //}
 
     this.Init = function() {
       if (this.loop.value == mst.C.LOOP.REV) {
