@@ -18,6 +18,9 @@ div.container
           div.panel-body
             table
               tr
+                td
+                  button ng-click="vm.refreshDeviceList()" Refresh
+              tr
                 td MIDI Output Device:
                 td
                   select#select_out [ng-model="vm.player.midiOut"

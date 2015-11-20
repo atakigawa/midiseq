@@ -20,23 +20,37 @@ function IndexController(
   vm.isSetupPanelVisible = true;
 
   vm.toggleSetupPanelVisible = toggleSetupPanelVisible;
+  vm.refreshDeviceList = refreshDeviceList;
 
   init();
 
   function init() {
     var midiMgr = MidiService.getMidiManager();
-    console.log(midiMgr)
-    var seqGenClient = SeqGenClientService.getClient({
-      url: location.host + '/ws/midi'
-    })
-    vm.player = new PlayerLibModel().getPlayer({
-      mst: vm.mst,
-      midiManager: midiMgr
-    });
-    vm.player.PreInit();
+    midiMgr.init(
+      function() {
+        var seqGenClient = SeqGenClientService.getClient({
+          url: location.host + '/ws/seq-gen'
+        })
+        vm.player = new PlayerLibModel().getPlayer({
+          mst: vm.mst,
+          midiManager: midiMgr
+        });
+        vm.player.PreInit();
+
+        midiMgr.onMidiStateChange = function() {
+          vm.player.refreshDeviceList();
+        };
+      },
+      function() {
+        console.log('midiMgr init failed');
+      });
   }
 
   function toggleSetupPanelVisible() {
     vm.isSetupPanelVisible = !vm.isSetupPanelVisible;
+  }
+
+  function refreshDeviceList() {
+    vm.player.refreshDeviceList();
   }
 }

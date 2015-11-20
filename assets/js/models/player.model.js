@@ -169,7 +169,7 @@ function PlayerLibModel(_, jq) {
     }
 
     this.Stop = function() {
-      this.sendChannelMsg(0x80, this.lastnote, 0);
+      this.sendChannelMsg(0x80, this.lastNote, 0);
       // all sound off msg
       this.sendChannelMsg(0xb0, 0x78, 0);
       // all note off msg
@@ -328,6 +328,11 @@ function PlayerLibModel(_, jq) {
       this.midiMgr.MidiOut(s1);
     };
 
+    this.refreshDeviceList = function() {
+      this.midiInList = this.midiMgr.MidiInList();
+      this.midiOutList = this.midiMgr.MidiOutList();
+    };
+
     this.Save = function() {
       var out = {
         seq: _.map(this.sequencers, function(e) {
@@ -391,15 +396,19 @@ function PlayerLibModel(_, jq) {
     }
 
     this.initmidi = function() {
-      var mOutVal = this.midiOut.value;
-      var mInVal = this.midiIn.value;
-      console.log('Output Device: '+mOutVal+' Input Device: '+mInVal);
-      this.midiMgr.MidiOutOpen(mOutVal);
-      if (this.mInVal != 0) {
+      if (this.midiOut) {
+        var mOutVal = this.midiOut.value;
+        this.midiMgr.MidiOutOpen(mOutVal);
+        console.log('Output Device: ' + mOutVal);
+      }
+
+      if (this.midiIn) {
+        var mInVal = this.midiIn.value;
         this.midiMgr.MidiInOpen(this.mInVal, function() {
           var args = [].slice.call(arguments);
           midiHandler(_this, args);
         });
+        console.log('Input Device: ' + mInVal);
       }
     }
 

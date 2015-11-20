@@ -15,6 +15,11 @@
             <table>
               <tr>
                 <td>
+                  <button ng-click="vm.refreshDeviceList()">Refresh</button>
+                </td>
+              </tr>
+              <tr>
+                <td>
                   MIDI Output Device:
                 </td>
                 <td>
