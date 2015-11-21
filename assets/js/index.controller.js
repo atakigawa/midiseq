@@ -18,7 +18,6 @@ function IndexController(
   vm.mst = MasterData;
   vm.player = null;
   vm.midiMgr = null;
-  vm.seqGenClient = null;
   vm.isSetupPanelVisible = true;
 
   vm.toggleSetupPanelVisible = toggleSetupPanelVisible;
@@ -32,11 +31,7 @@ function IndexController(
     var midiMgr = MidiService.getMidiManager({
       url: urlMidi
     });
-    var seqGenClient = SeqGenClientService.getClient({
-      url: urlSeqGen
-    });
     vm.midiMgr = midiMgr;
-    vm.seqGenClient = seqGenClient;
 
     midiMgr.init(
       function() {
